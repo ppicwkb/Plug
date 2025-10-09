@@ -3,24 +3,474 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Plug Kontainer (Lokasi Tersembunyi)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Pencatatan Plug in Kontainer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        .loading {
-            display: none;
+        
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --success: #48bb78;
+            --danger: #f56565;
+            --warning: #ed8936;
+            --dark: #2d3748;
+            --light: #f7fafc;
+            --border: #e2e8f0;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
-        .loading.show {
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 16px;
+            color: var(--dark);
+        }
+        
+        body.locked {
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
             display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 40px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        @keyframes fadeInUp {
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(20px); }
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+        }
+        
+        .content {
+            padding: 32px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 2px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 15px;
+            color: #718096;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+        }
+        
+        input:hover, textarea:hover, select:hover {
+            border-color: #cbd5e0;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-section {
+            margin-bottom: 28px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .form-section h3 {
+            margin-bottom: 20px;
+            color: var(--dark);
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e0;
+        }
+        
+        .message {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .message.success {
+            background: #f0fdf4;
+            color: #15803d;
+            border-left-color: var(--success);
+        }
+        
+        .message.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border-left-color: var(--danger);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 28px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.25);
+        }
+        
+        .stat-card h3 {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            color: var(--dark);
+            padding: 16px 18px;
+            text-align: left;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            font-size: 13px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+        
+        td {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+        
+        tr:hover {
+            background: #f9fafb;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-edit, .btn-delete {
+            padding: 8px 14px;
+            font-size: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(49, 130, 206, 0.25);
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, var(--danger) 0%, #c53030 100%);
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 101, 101, 0.25);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+        
+        .spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5vh auto;
+            padding: 32px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideUp {
             from {
                 opacity: 0;
                 transform: translateY(30px);
@@ -30,809 +480,902 @@
                 transform: translateY(0);
             }
         }
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+        
+        .modal-header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .animate-fadeInUp {
-            animation: fadeInUp 0.6s ease-out;
+        
+        .modal-header h2 {
+            color: var(--dark);
+            font-size: 22px;
+            font-weight: 700;
         }
-        .animate-slideInRight {
-            animation: slideInRight 0.5s ease-out;
+        
+        .close {
+            color: #a0aec0;
+            font-size: 28px;
+            font-weight: 300;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: var(--light);
         }
-        .glass-effect {
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        
+        .close:hover {
+            color: var(--dark);
+            background: #e2e8f0;
         }
-        .gradient-border {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2px;
-            border-radius: 12px;
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #a0aec0;
         }
-        .gradient-border-inner {
-            background: white;
-            border-radius: 10px;
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
         }
-        /* Floating Label Styles */
-        .input-group {
-            position: relative;
-        }
-        .floating-label {
-            position: absolute;
-            top: 50%;
-            left: 1rem;
-            transform: translateY(-50%);
-            transition: all 0.3s ease;
-            pointer-events: none;
-            background: white; 
-            padding: 0 4px;
-            margin-left: -4px;
-        }
-        .input-focused, .input-filled {
-            /* Input is focused or has content */
-        }
-        .input-focused .floating-label, .input-filled .floating-label {
-            top: 0;
-            transform: translateY(-50%) scale(0.85);
-            color: #4f46e5;
+        
+        .empty-state h3 {
+            color: #718096;
+            font-size: 18px;
+            margin-bottom: 8px;
             font-weight: 600;
         }
-
-        .custom-shadow {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .hover-lift {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .hover-lift:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-        .status-badge {
-            position: relative;
-            overflow: hidden;
-        }
-        .status-badge::before {
-            content: '';
-            position: absolute;
+        
+        /* Login Modal */
+        .login-modal {
+            display: flex;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
             top: 0;
-            left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
-        .status-badge:hover::before {
-            left: 100%;
+        
+        .login-container {
+            background: white;
+            padding: 48px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @media (max-width: 640px) {
-            .mobile-padding {
-                padding-left: 1rem;
-                padding-right: 1rem;
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .login-header h2 {
+            color: var(--dark);
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .login-header p {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .login-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .login-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .login-form-group label {
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .login-form-group input {
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .login-form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .login-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+        }
+        
+        .login-btn:active {
+            transform: translateY(0);
+        }
+        
+        .login-error {
+            padding: 12px 16px;
+            background: #fef2f2;
+            color: #991b1b;
+            border-left: 4px solid var(--danger);
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .login-error.show {
+            display: block;
+        }
+        
+        .login-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
             }
-            .mobile-text {
-                font-size: 1.5rem;
+            
+            .header {
+                padding: 28px 20px;
             }
-            .mobile-card {
-                margin: 0.5rem;
-                padding: 1.5rem;
+            
+            .header h1 {
+                font-size: 24px;
+                flex-direction: column;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .modal-content {
+                margin: 50% auto;
+                width: 95%;
+                padding: 24px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 12px 10px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .btn-edit, .btn-delete {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .tabs {
+                gap: 0;
+                margin-bottom: 24px;
+            }
+            
+            .tab-btn {
+                flex: 1;
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+            
+            .container {
+                border-radius: 12px;
+                min-height: auto;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+                gap: 8px;
+            }
+            
+            .header p {
+                font-size: 12px;
+            }
+            
+            .content {
+                padding: 16px;
+            }
+            
+            .stat-card {
+                padding: 20px 16px;
+            }
+            
+            .stat-card .value {
+                font-size: 28px;
+            }
+            
+            .form-group {
+                margin-bottom: 16px;
+            }
+            
+            .form-section {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+            
+            .button-group {
+                margin-top: 20px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .modal-header h2 {
+                font-size: 18px;
+            }
+            
+            table {
+                font-size: 11px;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+            }
+            
+            .tab-btn {
+                font-size: 12px;
+                padding: 10px 8px;
             }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen font-sans relative overflow-x-hidden">
-    <div class="fixed inset-0 opacity-5 pointer-events-none">
-        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 25px 25px, #4f46e5 2px, transparent 0), radial-gradient(circle at 75px 75px, #7c3aed 2px, transparent 0); background-size: 100px 100px;"></div>
-    </div>
-    <div id="loginModal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-blue-900/20 to-purple-900/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="glass-effect rounded-2xl custom-shadow p-8 max-w-md w-full mx-4 animate-fadeInUp">
-            <div class="text-center mb-8">
-                <div class="gradient-border mx-auto mb-6 w-20 h-20">
-                    <div class="gradient-border-inner w-full h-full flex items-center justify-center">
-                        <span class="text-3xl">🔐</span>
-                    </div>
-                </div>
-                <h2 class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-3">Secure Access</h2>
-                <p class="text-gray-600 text-sm leading-relaxed">Masukkan kredensial untuk mengakses</p>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-truck"></i> Sistem Pencatatan Plug in</h1>
+            <p>data pencatatan plug in kontainer</p>
+        </div>
+        
+        <div class="content">
+            <div class="message" id="message"></div>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('input')">
+                    <i class="fas fa-edit"></i> Input Data
+                </button>
+                <button class="tab-btn" onclick="switchTab('view')">
+                    <i class="fas fa-list"></i> Lihat Data
+                </button>
             </div>
             
-            <form id="loginForm" class="space-y-6">
-                <div class="space-y-5">
+            <!-- Tab Input Data -->
+            <div id="input" class="tab-content active">
+                <form id="dataForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tanggal"><i class="fas fa-calendar"></i> Tanggal</label>
+                            <input type="date" id="tanggal" name="tanggal" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="inv"><i class="fas fa-receipt"></i> No. Invoice</label>
+                            <input type="text" id="inv" name="inv" placeholder="Masukkan nomor invoice" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="plat"><i class="fas fa-car"></i> Plat Nomor</label>
+                            <input type="text" id="plat" name="plat" placeholder="Contoh: AB 1234 CD" required>
+                        </div>
+                    </div>
                     
-                    <div class="input-group">
-                        <label for="username" class="floating-label text-sm text-gray-500">👤 Username</label>
-                        <input type="text" id="username" name="username" required 
-                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800 placeholder-transparent"
-                               placeholder="Username">
+                    <div class="form-section">
+                        <h3><i class="fas fa-clock"></i> Jam Plug in kontainer</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="jamMulai1">Jam Mulai 1</label>
+                                <input type="time" id="jamMulai1" name="jamMulai1">
+                            </div>
+                            <div class="form-group">
+                                <label for="jamSelesai1">Jam Selesai 1</label>
+                                <input type="time" id="jamSelesai1" name="jamSelesai1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="jamMulai2">Jam Mulai 2</label>
+                                <input type="time" id="jamMulai2" name="jamMulai2">
+                            </div>
+                            <div class="form-group">
+                                <label for="jamSelesai2">Jam Selesai 2</label>
+                                <input type="time" id="jamSelesai2" name="jamSelesai2">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="jamMulai3">Jam Mulai 3</label>
+                                <input type="time" id="jamMulai3" name="jamMulai3">
+                            </div>
+                            <div class="form-group">
+                                <label for="jamSelesai3">Jam Selesai 3</label>
+                                <input type="time" id="jamSelesai3" name="jamSelesai3">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="jamMulai4">Jam Mulai 4</label>
+                                <input type="time" id="jamMulai4" name="jamMulai4">
+                            </div>
+                            <div class="form-group">
+                                <label for="jamSelesai4">Jam Selesai 4</label>
+                                <input type="time" id="jamSelesai4" name="jamSelesai4">
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="input-group">
-                        <label for="password" class="floating-label text-sm text-gray-500">🔑 Password</label>
-                        <input type="password" id="password" name="password" required 
-                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800 placeholder-transparent"
-                               placeholder="Password">
+                    <div class="form-group">
+                        <label for="catatan"><i class="fas fa-sticky-note"></i> Catatan</label>
+                        <textarea id="catatan" name="catatan" placeholder="Masukkan catatan tambahan..."></textarea>
                     </div>
-                </div>
-                
-                <div id="loginError" class="hidden bg-gradient-to-r from-red-50 to-red-100 border border-red-200 text-red-800 p-4 rounded-xl text-sm animate-slideInRight">
-                    <div class="flex items-center">
-                        <span class="text-red-500 mr-2">⚠️</span>
-                        Username atau password salah. Silakan coba lagi.
-                    </div>
-                </div>
-                
-                <button type="submit" id="loginBtn"
-                        class="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white font-bold py-4 px-6 rounded-xl hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 transform hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 shadow-xl relative overflow-hidden group">
-                    <span class="relative z-10 flex items-center justify-center">
-                        <span class="mr-2"></span>
-                        Masuk ke Sistem
-                    </span>
-                    <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <div id="mainContent" class="hidden relative z-10">
-        <div class="container mx-auto mobile-padding py-6 sm:py-8 max-w-7xl">
-            <div class="text-center mb-8 sm:mb-12 animate-fadeInUp">
-                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                    <div class="hidden sm:block"></div>
-                    <div class="text-center">
-                        <h1 class="text-2xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-2">
-                            📋 DATA PLUG KONTAINER
-                        </h1>
-                        <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded-full"></div>
-                    </div>
-                    <button onclick="logout()" 
-                            class="bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300 text-sm border border-red-200 hover:border-red-300 hover-lift">
-                        <span class="flex items-center">
-                            <span class="mr-2">🚪</span>
-                            Logout
-                        </span>
-                    </button>
-                </div>
-                <p class="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">Manajemen data Plug kontainer</p>
-            </div>
-
-        <div class="glass-effect rounded-2xl custom-shadow mobile-card mb-8 hover-lift animate-fadeInUp">
-            <div class="p-6 sm:p-8">
-                <div class="flex items-center mb-8">
-                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <span class="text-white text-xl">📝</span>
-                    </div>
-                    <div>
-                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Input Data </h2>
-                        <p class="text-gray-600 text-sm">Lengkapi data</p>
-                    </div>
-                </div>
-                
-                <form id="dataForm" class="space-y-6">
-                    <input type="hidden" id="row" name="row" value="">
                     
-                    <input type="hidden" id="lokasi" name="lokasi" value="">
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div>
-                            <label for="tanggal" class="block text-sm font-bold text-gray-700 mb-3">📅 Tanggal</label>
-                            <input type="date" id="tanggal" name="tanggal" required
-                                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800">
-                        </div>
-
-                        <div>
-                            <label for="inv" class="block text-sm font-bold text-gray-700 mb-3">🏷️ Nomor INV</label>
-                            <input type="text" id="inv" name="inv" required placeholder="Masukkan nomor INV"
-                                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800 placeholder-gray-400">
-                        </div>
-
-                        <div>
-                            <label for="plat" class="block text-sm font-bold text-gray-700 mb-3">🚗 Plat Nomor</label>
-                            <input type="text" id="plat" name="plat" required placeholder="Contoh: B 1234 ABC"
-                                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800 placeholder-gray-400">
-                        </div>
-                    </div>
-
-                    <div class="space-y-4 pt-4 border-t border-gray-200 mt-6">
-                        <h3 class="text-md font-bold text-gray-700">Slot Waktu Plug:</h3>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div>
-                                <label for="jamMulai1" class="block text-sm font-medium text-gray-600 mb-2">⏰ Mulai 1</label>
-                                <input type="time" id="jamMulai1" name="jamMulai1"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800">
-                            </div>
-                            <div>
-                                <label for="jamSelesai1" class="block text-sm font-medium text-gray-600 mb-2">⏱️ Selesai 1</label>
-                                <input type="time" id="jamSelesai1" name="jamSelesai1"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800">
-                            </div>
-                            <div>
-                                <label for="jamMulai2" class="block text-sm font-medium text-gray-600 mb-2">⏰ Mulai 2</label>
-                                <input type="time" id="jamMulai2" name="jamMulai2"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800">
-                            </div>
-                            <div>
-                                <label for="jamSelesai2" class="block text-sm font-medium text-gray-600 mb-2">⏱️ Selesai 2</label>
-                                <input type="time" id="jamSelesai2" name="jamSelesai2"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800">
-                            </div>
-                            <div>
-                                <label for="jamMulai3" class="block text-sm font-medium text-gray-600 mb-2">⏰ Mulai 3</label>
-                                <input type="time" id="jamMulai3" name="jamMulai3"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800">
-                            </div>
-                            <div>
-                                <label for="jamSelesai3" class="block text-sm font-medium text-gray-600 mb-2">⏱️ Selesai 3</label>
-                                <input type="time" id="jamSelesai3" name="jamSelesai3"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800">
-                            </div>
-                            <div>
-                                <label for="jamMulai4" class="block text-sm font-medium text-gray-600 mb-2">⏰ Mulai 4</label>
-                                <input type="time" id="jamMulai4" name="jamMulai4"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800">
-                            </div>
-                            <div>
-                                <label for="jamSelesai4" class="block text-sm font-medium text-gray-600 mb-2">⏱️ Selesai 4</label>
-                                <input type="time" id="jamSelesai4" name="jamSelesai4"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800">
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="catatan" class="block text-sm font-bold text-gray-700 mb-3">📝 Catatan</label>
-                        <textarea id="catatan" name="catatan" rows="4" placeholder="Tambahkan catatan atau keterangan tambahan..."
-                                  class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-gray-800 placeholder-gray-400 resize-none"></textarea>
-                    </div>
-
-                    <div class="pt-6">
-                        <button type="submit" id="submitBtn"
-                                class="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white font-bold py-5 px-8 rounded-xl hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 transform hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 shadow-xl relative overflow-hidden group">
-                            <span class="relative z-10 flex items-center justify-center text-lg">
-                                <span class="mr-3">💾</span>
-                                Simpan Data
-                            </span>
-                            <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Simpan Data
+                        </button>
+                        <button type="reset" class="btn-secondary">
+                            <i class="fas fa-redo"></i> Reset Form
                         </button>
                     </div>
                 </form>
             </div>
-
-            <div id="loading" class="loading fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
-                <div class="bg-white rounded-lg p-6 text-center">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p class="text-gray-700">Menyimpan data...</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="statusMessage" class="hidden p-4 rounded-lg text-center font-semibold max-w-7xl mx-auto mb-8"></div>
-
-        <div class="glass-effect rounded-2xl custom-shadow mobile-card mb-8 hover-lift animate-fadeInUp">
-            <div class="p-6 sm:p-8">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                    <div class="flex items-center">
-                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4">
-                            <span class="text-white text-xl">📊</span>
-                        </div>
-                        <div>
-                            <h3 class="text-xl sm:text-2xl font-bold text-gray-800">Data Plug Kontainer</h3>
-                            <p class="text-gray-600 text-sm">Semua data yang tersimpan</p>
-                        </div>
-                    </div>
-                    <button onclick="loadData()" 
-                            class="bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-blue-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300 border border-blue-200 hover:border-blue-300 hover-lift">
-                        <span class="flex items-center">
-                            <span class="mr-2">🔄</span>
-                            Refresh Data
-                        </span>
-                    </button>
-                </div>
             
-                <div id="dataContainer" class="rounded-xl">
-                    <div id="loadingData" class="text-center py-12 text-gray-500">
-                        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-                        <p class="text-lg font-medium">Memuat data...</p>
-                        <p class="text-sm text-gray-400 mt-1">Mohon tunggu sebentar</p>
-                    </div>
-                    <div id="noData" class="hidden text-center py-16 text-gray-500">
-                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-3xl">📝</span>
-                        </div>
-                        <p class="text-lg font-medium mb-2">Belum ada data tersimpan</p>
-                        <p class="text-sm text-gray-400">Silakan tambahkan data baru menggunakan form di atas</p>
-                    </div>
-                    
-                    <div id="dataTable" class="hidden">
-                        <div class="overflow-x-auto -mx-4 sm:mx-0">
-                            <div class="inline-block min-w-full align-middle">
-                                <table class="min-w-full text-xs sm:text-sm">
-                                    <thead>
-                                        <tr class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
-                                            <th class="px-2 sm:px-4 py-3 sm:py-4 text-left font-bold text-gray-700 whitespace-nowrap text-xs sm:text-sm">📅 Tanggal</th>
-                                            <th class="px-2 sm:px-4 py-3 sm:py-4 text-left font-bold text-gray-700 whitespace-nowrap text-xs sm:text-sm">🏷️ INV</th>
-                                            <th class="px-2 sm:px-4 py-3 sm:py-4 text-left font-bold text-gray-700 whitespace-nowrap text-xs sm:text-sm">🚗 Plat</th>
-                                            <th class="px-2 sm:px-4 py-3 sm:py-4 text-left font-bold text-gray-700 whitespace-nowrap text-xs sm:text-sm">🔌 Durasi Total</th>
-                                            <th class="px-2 sm:px-4 py-3 sm:py-4 text-left font-bold text-gray-700 whitespace-nowrap text-xs sm:text-sm hidden lg:table-cell">📝 Catatan</th>
-                                            <th class="px-2 sm:px-4 py-3 sm:py-4 text-left font-bold text-gray-700 whitespace-nowrap text-xs sm:text-sm">⚙️ Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dataTableBody" class="divide-y divide-gray-100">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        </div>
-
-        <div class="glass-effect rounded-2xl custom-shadow mobile-card hover-lift animate-fadeInUp">
-            <div class="p-6 sm:p-8">
-                <div class="flex items-center mb-6">
-                    <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
-                        <span class="text-white text-xl">🚀</span>
-                    </div>
-                    <div>
-                        <h3 class="text-xl sm:text-2xl font-bold text-gray-800">Pintasan</h3>
-                        <p class="text-gray-600 text-sm">Aksi cepat</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <button onclick="clearForm()" 
-                            class="bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 text-gray-700 font-semibold py-4 px-6 rounded-xl transition-all duration-300 border border-gray-200 hover:border-gray-300 hover-lift group">
-                        <span class="flex items-center justify-center">
-                            <span class="mr-3 group-hover:scale-110 transition-transform">🗑️</span>
-                            Bersihkan Form
-                        </span>
+            <!-- Tab Lihat Data -->
+            <div id="view" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px;">
+                    <h2 style="color: var(--dark); font-size: 22px; font-weight: 700;">
+                        <i class="fas fa-database"></i> Data Plug in Kontainer
+                    </h2>
+                    <button class="btn-primary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> Refresh
                     </button>
-                    <button onclick="setCurrentDateTime()" 
-                            class="bg-gradient-to-r from-green-50 to-emerald-100 hover:from-green-100 hover:to-emerald-200 text-green-700 font-semibold py-4 px-6 rounded-xl transition-all duration-300 border border-green-200 hover:border-green-300 hover-lift group">
-                        <span class="flex items-center justify-center">
-                            <span class="mr-3 group-hover:scale-110 transition-transform">🕐</span>
-                            Set Waktu Sekarang
-                        </span>
-                    </button>
+                </div>
+                
+                <div id="statsContainer" class="stats"></div>
+                
+                <div id="dataContainer" class="table-wrapper">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Memuat data...</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Modal Edit -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Edit Data</h2>
+                <span class="close" onclick="closeEditModal()"><i class="fas fa-times"></i></span>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editRowIndex">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tanggal</label>
+                        <input type="date" id="editTanggal" required>
+                    </div>
+                    <div class="form-group">
+                        <label>No. Invoice</label>
+                        <input type="text" id="editInv" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Plat Nomor</label>
+                    <input type="text" id="editPlat" required>
+                </div>
+                <div class="form-section">
+                    <h3><i class="fas fa-clock"></i> Jam Plug in</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Jam Mulai 1</label>
+                            <input type="time" id="editJamMulai1">
+                        </div>
+                        <div class="form-group">
+                            <label>Jam Selesai 1</label>
+                            <input type="time" id="editJamSelesai1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Jam Mulai 2</label>
+                            <input type="time" id="editJamMulai2">
+                        </div>
+                        <div class="form-group">
+                            <label>Jam Selesai 2</label>
+                            <input type="time" id="editJamSelesai2">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Jam Mulai 3</label>
+                            <input type="time" id="editJamMulai3">
+                        </div>
+                        <div class="form-group">
+                            <label>Jam Selesai 3</label>
+                            <input type="time" id="editJamSelesai3">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Jam Mulai 4</label>
+                            <input type="time" id="editJamMulai4">
+                        </div>
+                        <div class="form-group">
+                            <label>Jam Selesai 4</label>
+                            <input type="time" id="editJamSelesai4">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Catatan</label>
+                    <textarea id="editCatatan"></textarea>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Perbarui
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeEditModal()">
+                        <i class="fas fa-times"></i> Batal
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysnBIvNvleY47LBHbdZTYgV9A8shZAg1-8sAI6T1GIiiVwL92Ne5k0xj3bU4Jsae4p/exec';
-        
-        // Login credentials
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwPaTCXkQ88IoukODJtLdFdPzNIM1zPD1cynMCBtgrgFnu79c3rIoPKAnx66SA8HxM/exec';
         const VALID_USERNAME = 'plug';
         const VALID_PASSWORD = '1';
         
-        // --- Floating Label Logic for Login Modal ---
-        document.querySelectorAll('#loginForm input').forEach(input => {
-            const group = input.closest('.input-group');
-            if (group) {
-                if (input.value) {
-                    group.classList.add('input-filled');
-                }
-
-                input.addEventListener('focus', () => {
-                    group.classList.add('input-focused');
-                    group.classList.add('input-filled');
-                });
-                input.addEventListener('blur', () => {
-                    group.classList.remove('input-focused');
-                    if (!input.value) {
-                        group.classList.remove('input-filled');
-                    }
-                });
-                input.addEventListener('input', () => {
-                    if (input.value) {
-                        group.classList.add('input-filled');
-                    } else {
-                        group.classList.remove('input-filled');
-                    }
-                });
-            }
+        let isLoggedIn = false;
+        
+        // Initialize login on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tanggal').value = today;
         });
-        // --- End Floating Label Logic ---
-
-
+        
         function checkLoginStatus() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (isLoggedIn) {
-                showMainContent();
-            } else {
+            // Check if user is logged in from sessionStorage
+            isLoggedIn = sessionStorage.getItem('loggedIn') === 'true';
+            
+            if (!isLoggedIn) {
                 showLoginModal();
             }
         }
         
         function showLoginModal() {
-            document.getElementById('loginModal').classList.remove('hidden');
-            document.getElementById('mainContent').classList.add('hidden');
+            const loginModal = document.createElement('div');
+            loginModal.className = 'login-modal';
+            loginModal.id = 'loginModal';
+            loginModal.innerHTML = `
+                <div class="login-container">
+                    <div class="login-header">
+                        <div class="login-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h2>Akses Sistem</h2>
+                        <p>Masukkan kredensial Anda untuk melanjutkan</p>
+                    </div>
+                    <form id="loginForm" class="login-form" onsubmit="handleLogin(event)">
+                        <div class="login-error" id="loginError">
+                            <i class="fas fa-exclamation-circle"></i> Username atau password salah
+                        </div>
+                        <div class="login-form-group">
+                            <label for="loginUsername">
+                                <i class="fas fa-user"></i> Username
+                            </label>
+                            <input 
+                                type="text" 
+                                id="loginUsername" 
+                                placeholder="Masukkan username" 
+                                required
+                                autofocus
+                            >
+                        </div>
+                        <div class="login-form-group">
+                            <label for="loginPassword">
+                                <i class="fas fa-key"></i> Password
+                            </label>
+                            <input 
+                                type="password" 
+                                id="loginPassword" 
+                                placeholder="Masukkan password" 
+                                required
+                            >
+                        </div>
+                        <button type="submit" class="login-btn">
+                            <i class="fas fa-sign-in-alt"></i> Masuk
+                        </button>
+                    </form>
+                </div>
+            `;
+            document.body.insertBefore(loginModal, document.body.firstChild);
+            document.body.classList.add('locked');
         }
         
-        function showMainContent() {
-            document.getElementById('loginModal').classList.add('hidden');
-            document.getElementById('mainContent').classList.remove('hidden');
-            loadData(); 
-        }
-        
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        function handleLogin(event) {
+            event.preventDefault();
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const loginBtn = event.target.querySelector('.login-btn');
             const loginError = document.getElementById('loginError');
             
+            // Clear error message
+            loginError.classList.remove('show');
+            
             if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-                localStorage.setItem('isLoggedIn', 'true');
-                loginError.classList.add('hidden');
+                // Login successful
+                isLoggedIn = true;
+                sessionStorage.setItem('loggedIn', 'true');
                 
-                document.getElementById('username').value = '';
-                document.getElementById('password').value = '';
-                document.querySelectorAll('#loginForm .input-group').forEach(group => group.classList.remove('input-filled'));
-
-
-                showMainContent();
-                showMessage('✅ Login berhasil! Selamat datang.', 'success');
-            } else {
-                loginError.classList.remove('hidden');
+                // Add loading state
+                loginBtn.classList.add('login-loading');
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memverifikasi...';
                 
-                document.getElementById('password').value = '';
-                document.querySelector('#loginForm input[name="password"]').closest('.input-group').classList.remove('input-filled');
-                
-                const modal = document.querySelector('#loginModal > div');
-                modal.style.animation = 'shake 0.5s';
+                // Close login modal after delay
                 setTimeout(() => {
-                    modal.style.animation = '';
-                }, 500);
+                    const loginModal = document.getElementById('loginModal');
+                    if (loginModal) {
+                        loginModal.remove();
+                    }
+                    document.body.classList.remove('locked');
+                    loginBtn.classList.remove('login-loading');
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
+                }, 1000);
+            } else {
+                // Login failed
+                loginError.classList.add('show');
+                document.getElementById('loginUsername').value = '';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginUsername').focus();
             }
-        });
+        }
         
-        function logout() {
-            localStorage.removeItem('isLoggedIn');
-            showLoginModal();
-            showMessage('👋 Anda telah logout. Sampai jumpa!', 'success');
-        }
-
-        document.getElementById('dataForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const loading = document.getElementById('loading');
-            const submitBtn = document.getElementById('submitBtn');
-            
-            loading.classList.add('show');
-            submitBtn.disabled = true;
-            
-            try {
-                const formData = new FormData(this);
-                
-                // IMPORTANT: Ensure the hidden 'lokasi' field is included in the formData
-                // It will send an empty string for new entries, preserving the column structure in GAS
-                
-                const rowValue = document.getElementById('row').value;
-                const url = SCRIPT_URL + (rowValue ? `?row=${rowValue}` : '');
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (response.ok) {
-                    showMessage('✅ Data berhasil disimpan/diperbarui!', 'success');
-                    
-                    clearForm();
-                    
-                    loadData();
-                } else {
-                    throw new Error('Gagal menyimpan data ke Google Sheets');
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('❌ Terjadi kesalahan saat memproses data. Cek koneksi atau coba lagi. ' + error.message, 'error');
-            } finally {
-                loading.classList.remove('show');
-                submitBtn.disabled = false;
-            }
-        });
-
-        function showMessage(message, type) {
-            const statusMessage = document.getElementById('statusMessage');
-            statusMessage.textContent = message;
-            statusMessage.className = `p-4 rounded-lg text-center font-semibold max-w-7xl mx-auto mb-8 ${
-                type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`;
-            statusMessage.classList.remove('hidden');
-            
-            setTimeout(() => {
-                statusMessage.classList.add('hidden');
-            }, 5000);
-        }
-
-        function clearForm() {
-            document.getElementById('dataForm').reset();
-            document.getElementById('row').value = '';
-            document.getElementById('submitBtn').innerHTML = '<span class="relative z-10 flex items-center justify-center text-lg"><span class="mr-3">💾</span> Simpan Data</span><div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>';
-            
+        
+        document.addEventListener('DOMContentLoaded', function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('tanggal').value = today;
-        }
-
-        function setCurrentDateTime() {
-            const now = new Date();
+        });
+        
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
             
-            const today = now.toISOString().split('T')[0];
-            document.getElementById('tanggal').value = today;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
             
-            const currentTime = now.toTimeString().slice(0, 5);
-            ['jamMulai1', 'jamMulai2', 'jamMulai3', 'jamMulai4'].forEach(id => {
-                document.getElementById(id).value = currentTime;
-            });
-            showMessage('🕐 Tanggal dan Jam Mulai telah diatur ke waktu sekarang.', 'success');
-        }
-
-        function checkEditMode() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const row = urlParams.get('row');
+            document.getElementById(tabName).classList.add('active');
+            event.target.closest('.tab-btn').classList.add('active');
             
-            if (row) {
-                document.getElementById('row').value = row;
-                document.getElementById('submitBtn').innerHTML = '<span class="relative z-10 flex items-center justify-center text-lg"><span class="mr-3">✏️</span> Update Data</span><div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>';
-                
-                // Fill form with URL parameters
-                // NOTE: 'lokasi' is not filled here because the input is hidden, 
-                // but its value should be included in the URL params for a complete update (see loadData)
-                ['tanggal', 'inv', 'plat', 'lokasi', 'jamMulai1', 'jamSelesai1', 'jamMulai2', 'jamSelesai2', 'jamMulai3', 'jamSelesai3', 'jamMulai4', 'jamSelesai4', 'catatan'].forEach(field => {
-                    const value = urlParams.get(field);
-                    if (value && document.getElementById(field)) {
-                        document.getElementById(field).value = value;
-                    }
-                });
-
-                showMessage('📝 Data dimuat dari URL untuk diedit.', 'success');
-            }
-        }
-
-        function calculateTotalDuration(data) {
-            let totalMinutes = 0;
-            const slots = [1, 2, 3, 4];
-
-            slots.forEach(slot => {
-                const mulai = data[`jamMulai${slot}`];
-                const selesai = data[`jamSelesai${slot}`];
-                
-                if (mulai && selesai) {
-                    try {
-                        const [hMulai, mMulai] = mulai.split(':').map(Number);
-                        const [hSelesai, mSelesai] = selesai.split(':').map(Number);
-
-                        const timeMulai = hMulai * 60 + mMulai;
-                        let timeSelesai = hSelesai * 60 + mSelesai;
-
-                        if (timeSelesai < timeMulai) {
-                            timeSelesai += 24 * 60; 
-                        }
-
-                        totalMinutes += (timeSelesai - timeMulai);
-                    } catch (e) {
-                        console.warn(`Failed to parse time for slot ${slot}: ${mulai}, ${selesai}`, e);
-                    }
-                }
-            });
-
-            if (totalMinutes === 0) return '-';
-
-            const totalHours = Math.floor(totalMinutes / 60);
-            const remainingMinutes = totalMinutes % 60;
-
-            let durationStr = '';
-            if (totalHours > 0) {
-                durationStr += `${totalHours} jam`;
-            }
-            if (remainingMinutes > 0) {
-                if (durationStr) durationStr += ' ';
-                durationStr += `${remainingMinutes} mnt`;
-            }
-            return durationStr.trim() || '-';
-        }
-
-
-        async function loadData() {
-            const loadingData = document.getElementById('loadingData');
-            const noData = document.getElementById('noData');
-            const dataTable = document.getElementById('dataTable');
-            const dataTableBody = document.getElementById('dataTableBody');
-            
-            loadingData.classList.remove('hidden');
-            noData.classList.add('hidden');
-            dataTable.classList.add('hidden');
-            
-            try {
-                // Column order assumed: Tanggal (0), INV (1), Plat (2), Lokasi (3), JamMulai1 (4), ..., Catatan (12)
-                const SHEET_ID = '1Jqa9JiEdIpCG8vr2Cjk3dtx6scEbPhGQZqo4NupO2LI';
-                const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
-                
-                const response = await fetch(csvUrl);
-                const csvText = await response.text();
-                
-                const rows = csvText.split('\n').filter(row => row.trim());
-                const data = [];
-                
-                // Assuming 13 total columns (Original scheme)
-                for (let i = 1; i < rows.length; i++) {
-                    const columns = parseCSVRow(rows[i]);
-                    // Check if row has data and required columns are present (at least 13 columns)
-                    if (columns.length >= 13 && columns[0]) { 
-                        const rowData = {
-                            rowNumber: i + 1, 
-                            tanggal: formatDate(columns[0]),
-                            inv: columns[1] || '',
-                            plat: columns[2] || '', 
-                            lokasi: columns[3] || '', // Lokasi is kept in data for edit link
-                            jamMulai1: formatTime(columns[4]),
-                            jamSelesai1: formatTime(columns[5]),
-                            jamMulai2: formatTime(columns[6]),
-                            jamSelesai2: formatTime(columns[7]),    
-                            jamMulai3: formatTime(columns[8]),
-                            jamSelesai3: formatTime(columns[9]),   
-                            jamMulai4: formatTime(columns[10]),
-                            jamSelesai4: formatTime(columns[11]),  
-                            catatan: columns[12] || ''
-                        };
-                        
-                        rowData.totalDuration = calculateTotalDuration(rowData); 
-                        data.push(rowData);
-                    }
-                }
-                
-                if (data.length === 0) {
-                    loadingData.classList.add('hidden');
-                    noData.classList.remove('hidden');
-                    return;
-                }
-                
-                dataTableBody.innerHTML = '';
-                
-                data.forEach((row) => {
-                    
-                    // Build URL parameters for edit link - ALL FIELDS INCLUDED to prevent data loss on update
-                    const editParams = new URLSearchParams({
-                        row: row.rowNumber,
-                        tanggal: row.tanggal,
-                        inv: row.inv,
-                        plat: row.plat,
-                        lokasi: row.lokasi, // Lokasi included here to pass back to the hidden input
-                        jamMulai1: row.jamMulai1,
-                        jamSelesai1: row.jamSelesai1,
-                        jamMulai2: row.jamMulai2,
-                        jamSelesai2: row.jamSelesai2,
-                        jamMulai3: row.jamMulai3,
-                        jamSelesai3: row.jamSelesai3,
-                        jamMulai4: row.jamMulai4,
-                        jamSelesai4: row.jamSelesai4,
-                        catatan: row.catatan
-                    }).toString();
-
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 transition-all duration-300 group';
-                    
-                    tr.innerHTML = `
-                        <td class="px-2 sm:px-4 py-3 sm:py-4 font-medium text-gray-800 text-xs sm:text-sm">${row.tanggal || '-'}</td>
-                        <td class="px-2 sm:px-4 py-3 sm:py-4 font-bold text-blue-700 text-xs sm:text-sm">${row.inv || '-'}</td>
-                        <td class="px-2 sm:px-4 py-3 sm:py-4 font-mono text-gray-700 text-xs sm:text-sm">${row.plat || '-'}</td>
-                        
-                        <td class="px-2 sm:px-4 py-3 sm:py-4 font-semibold text-purple-700 text-xs sm:text-sm whitespace-nowrap">${row.totalDuration}</td>
-                        
-                        <td class="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 max-w-xs hidden lg:table-cell">
-                            <div class="truncate" title="${row.catatan || ''}">${row.catatan ? (row.catatan.length > 30 ? row.catatan.substring(0, 30) + '...' : row.catatan) : '-'}</div>
-                        </td>
-                        <td class="px-2 sm:px-4 py-3 sm:py-4">
-                            <a href="?${editParams}" 
-                                    class="bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-blue-700 font-semibold py-1 sm:py-2 px-2 sm:px-4 rounded-lg transition-all duration-300 border border-blue-200 hover:border-blue-300 text-xs sm:text-sm hover-lift inline-flex items-center">
-                                    <span class="mr-1">✏️</span>
-                                    <span class="hidden sm:inline">Edit</span>
-                            </a>
-                        </td>
-                    `;
-                    dataTableBody.appendChild(tr);
-                });
-                
-                loadingData.classList.add('hidden');
-                dataTable.classList.remove('hidden');
-                
-            } catch (error) {
-                console.error('Error loading data:', error);
-                loadingData.classList.add('hidden');
-                showMessage('❌ Gagal memuat data dari Google Sheets. Coba Refresh Data.', 'error');
-                noData.classList.remove('hidden');
+            if (tabName === 'view') {
+                refreshData();
             }
         }
         
-        // Helper functions (Unchanged)
-        function parseCSVRow(row) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < row.length; i++) {
-                const char = row[i];
-                
-                if (char === '"') {
-                    if (row[i+1] === '"') { 
-                        current += '"';
-                        i++;
-                    } else {
-                        inQuotes = !inQuotes;
-                    }
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim().replace(/^"|"$/g, '').trim()); 
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            
-            result.push(current.trim().replace(/^"|"$/g, '').trim());
-            return result;
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${text}`;
+            messageEl.className = `message ${type}`;
+            setTimeout(() => {
+                messageEl.className = 'message';
+            }, 4000);
         }
         
-        function formatDate(dateStr) {
-            if (!dateStr) return '';
-            try {
-                const date = new Date(dateStr);
-                if (!isNaN(date.getTime())) {
-                    return date.toISOString().split('T')[0];
-                }
-                if (dateStr.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/)) {
-                    const parts = dateStr.split(/[\/\-]/);
-                    if (parts.length === 3) {
-                        const d = parts[0].padStart(2, '0');
-                        const m = parts[1].padStart(2, '0');
-                        const y = parts[2];
-                        return `${y}-${m}-${d}`;
-                    }
-                }
-                return dateStr;
-            } catch (e) {
-                return dateStr;
-            }
-        }
-        
-        function formatTime(timeStr) {
-            if (!timeStr) return '';
-            try {
-                if (timeStr.includes(':')) {
-                    const parts = timeStr.split(':');
-                    if (parts.length >= 2) {
-                        const hours = parts[0].padStart(2, '0');
-                        const minutes = parts[1].padStart(2, '0');
-                        return `${hours}:${minutes}`;
-                    }
-                }
-                return timeStr;
-            } catch (e) {
-                return timeStr;
-            }
-        }
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            checkLoginStatus(); 
-            checkEditMode();
+        document.getElementById('dataForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            if (!document.getElementById('tanggal').value) {
+            const data = {
+                tanggal: document.getElementById('tanggal').value,
+                inv: document.getElementById('inv').value,
+                plat: document.getElementById('plat').value,
+                jamMulai1: document.getElementById('jamMulai1').value,
+                jamSelesai1: document.getElementById('jamSelesai1').value,
+                jamMulai2: document.getElementById('jamMulai2').value,
+                jamSelesai2: document.getElementById('jamSelesai2').value,
+                jamMulai3: document.getElementById('jamMulai3').value,
+                jamSelesai3: document.getElementById('jamSelesai3').value,
+                jamMulai4: document.getElementById('jamMulai4').value,
+                jamSelesai4: document.getElementById('jamSelesai4').value,
+                catatan: document.getElementById('catatan').value
+            };
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text())
+            .then(result => {
+                showMessage('Data berhasil disimpan!', 'success');
+                document.getElementById('dataForm').reset();
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('tanggal').value = today;
-            }
+            })
+            .catch(error => {
+                showMessage('Gagal menyimpan data: ' + error, 'error');
+            });
         });
-    </script>
-    </body>
-</html>
+        
+        function refreshData() {
+            const container = document.getElementById('dataContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Memuat data...</p></div>';
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({action: 'get'})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const uniquePlates = new Set(data.map(row => row[3])).size;
+                    const totalRecords = data.length;
+                    
+                    let statsHtml = `
+                        <div class="stat-card">
+                            <h3>∑ Total Records</h3>
+                            <div class="value">${totalRecords}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>🚛 Total Kontainer </h3>
+                            <div class="value">${uniquePlates}</div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('statsContainer').innerHTML = statsHtml;
+                    
+                    let html = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Timestamp</th>
+                                    <th>Tanggal</th>
+                                    <th>Invoice</th>
+                                    <th>Plat</th>
+                                    <th>Jam 1</th>
+                                    <th>Jam 2</th>
+                                    <th>Jam 3</th>
+                                    <th>Jam 4</th>
+                                    <th>Catatan</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    function formatTanggal(tgl) {
+    if (!tgl || tgl === '-') return '-';
+    const date = new Date(tgl);
+    if (isNaN(date)) return '-';
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    return date.toLocaleDateString('id-ID', options);
+}
 
+function formatJam(jam) {
+    if (!jam || jam === '-' || jam === 'Invalid Date') return '-';
+    const date = new Date(jam);
+    if (isNaN(date)) return '-';
+    return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+data.forEach((row, index) => {
+    // Format jam mulai & selesai
+    const jam1 = row[4] && row[5] ? `${formatJam(row[4])} - ${formatJam(row[5])}` : '-';
+    const jam2 = row[6] && row[7] ? `${formatJam(row[6])} - ${formatJam(row[7])}` : '-';
+    const jam3 = row[8] && row[9] ? `${formatJam(row[8])} - ${formatJam(row[9])}` : '-';
+    const jam4 = row[10] && row[11] ? `${formatJam(row[10])} - ${formatJam(row[11])}` : '-';
+
+    html += `
+        <tr>
+            <td>${index + 1}</td>
+            <td><small>${formatTanggal(row[0])}</small></td>
+            <td>${formatTanggal(row[1])}</td>
+            <td>${(row[2])}</td>
+            <td><strong>${row[3]}</strong></td>
+            <td>${jam1}</td>
+            <td>${jam2}</td>
+            <td>${jam3}</td>
+            <td>${jam4}</td>
+            <td>${row[12] ? row[12].substring(0, 25) + '...' : '-'}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-edit" onclick="openEditModal(${index}, ${JSON.stringify(row).replace(/"/g, '&quot;')})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn-delete" onclick="deleteRow(${index})">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `;
+});
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                } else {
+                    document.getElementById('statsContainer').innerHTML = '';
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📦</div>
+                            <h3>Tidak ada data</h3>
+                            <p>Belum ada catatan kendaraan. Silakan tambahkan data baru di tab Input Data.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Error</h3><p>Gagal memuat data: ${error}</p></div>`;
+                console.error('Error:', error);
+            });
+        }
+        
+        function openEditModal(index, row) {
+            document.getElementById('editRowIndex').value = index;
+            document.getElementById('editTanggal').value = row[1];
+            document.getElementById('editInv').value = row[2];
+            document.getElementById('editPlat').value = row[3];
+            document.getElementById('editJamMulai1').value = row[4];
+            document.getElementById('editJamSelesai1').value = row[5];
+            document.getElementById('editJamMulai2').value = row[6];
+            document.getElementById('editJamSelesai2').value = row[7];
+            document.getElementById('editJamMulai3').value = row[8];
+            document.getElementById('editJamSelesai3').value = row[9];
+            document.getElementById('editJamMulai4').value = row[10];
+            document.getElementById('editJamSelesai4').value = row[11];
+            document.getElementById('editCatatan').value = row[12];
+            
+            document.getElementById('editModal').style.display = 'block';
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const index = document.getElementById('editRowIndex').value;
+            const data = {
+                action: 'update',
+                rowIndex: index,
+                data: {
+                    tanggal: document.getElementById('editTanggal').value,
+                    inv: document.getElementById('editInv').value,
+                    plat: document.getElementById('editPlat').value,
+                    jamMulai1: document.getElementById('editJamMulai1').value,
+                    jamSelesai1: document.getElementById('editJamSelesai1').value,
+                    jamMulai2: document.getElementById('editJamMulai2').value,
+                    jamSelesai2: document.getElementById('editJamSelesai2').value,
+                    jamMulai3: document.getElementById('editJamMulai3').value,
+                    jamSelesai3: document.getElementById('editJamSelesai3').value,
+                    jamMulai4: document.getElementById('editJamMulai4').value,
+                    jamSelesai4: document.getElementById('editJamSelesai4').value,
+                    catatan: document.getElementById('editCatatan').value
+                }
+            };
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text())
+            .then(result => {
+                showMessage('Data berhasil diperbarui!', 'success');
+                closeEditModal();
+                refreshData();
+            })
+            .catch(error => {
+                showMessage('Gagal memperbarui data: ' + error, 'error');
+            });
+        });
+        
+        function deleteRow(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'delete',
+                        rowIndex: index
+                    })
+                })
+                .then(response => response.text())
+                .then(result => {
+                    showMessage('Data berhasil dihapus!', 'success');
+                    refreshData();
+                })
+                .catch(error => {
+                    showMessage('Gagal menghapus data: ' + error, 'error');
+                });
+            }
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
